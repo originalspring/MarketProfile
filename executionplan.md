@@ -60,6 +60,8 @@
 - 周级入库（新增）：
   - `weekly_profile_analysis`：每周一条聚合结果（Mon-Fri）。
   - `weekly_profile_comparison`：每周一条相对前一周的对比摘要（如 `poc_change/vah_change/val_change/direction_bias`）。
+- 批处理入库（新增）：
+  - `watchlist_batch_runs`：记录每次 watchlist 批跑的逐 ticker 执行状态与结果摘要。
 - 当前限制：未做 RTH/ETH 分离，当前为全时段聚合推导。
 
 ## 7. Watchlist（已落库）
@@ -83,8 +85,53 @@
   - Week2 vs Week1：`down_shift`
   - Week3 vs Week2：`up_shift`
 
-## 9. 下一步
+## 9. Watchlist 全量批跑状态（最新）
+- 批次：`20260301T082422Z`
+- 覆盖范围：`watchlist_stocks` 全部 active ticker（`60` 个）
+- 结果：`60 ok / 0 no_data / 0 failed`
+- 固定窗口：最近完整三周（Mon-Fri）
+  - `2026-02-09 ~ 2026-02-13`
+  - `2026-02-16 ~ 2026-02-20`
+  - `2026-02-23 ~ 2026-02-27`
+- 入库一致性检查：
+  - `weekly_profile_analysis`：watchlist `60` 个标的均有周条目
+  - `weekly_profile_comparison`：watchlist `60` 个标的均有周对比条目
+
+## 10. 近期分析结论快照（用于交接）
+- 全市场 Top5（基于结构上移 + 量能 + 旋转变化综合打分）：
+  - `TLT`
+  - `AAPL`
+  - `TTAN`
+  - `VXUS`
+  - `IEF`
+- 量子板块（IONQ/RGTI/QBTS/QUBT/ARQQ/QTUM）：
+  - 整体 `mixed`，未出现统一 `up_shift`。
+  - 共同特征：量能放大、波动提升、结构分歧大。
+- 加密重点（BTC/SOL/DOGE）：
+  - `BTC-USD`：最近两周偏 `down_shift`，量能回升但结构未确认反转。
+  - `SOL-USD`：先 `up_shift` 后 `mixed`，偏高波动交易结构。
+  - `DOGE-USD`：当前全局 `tick_size=0.25` 不适配低价币，Profile 信息失真。
+
+## 11. 数据库状态与优化建议
+- 当前核心使用表：
+  - `watchlist_stocks`
+  - `intraday_bars`
+  - `fetched_chunks_v2`
+  - `weekly_profile_analysis`
+  - `weekly_profile_comparison`
+  - `watchlist_batch_runs`
+- 历史遗留表（旧流程，当前不再依赖）：
+  - `analysis_results`
+  - `daily_bars`
+  - `fetched_chunks`
+  - `profile_analysis`
+- 后续优化建议：
+  - 为不同资产设置 `tick_size`（尤其 crypto 与低价股）。
+  - 增加 RTH/ETH session 开关。
+  - 为 `weekly_profile_*` 增加常用查询索引与视图。
+
+## 12. 下一步
 - 对齐业务需求与技术约束。
-- 确认是否对 watchlist 全量批跑最近完整三周。
+- 按资产类别配置 `tick_size` 参数表并重跑 crypto。
 - 增加 RTH/ETH 可选 session 分析。
 - 冻结 V1 范围并拆解为里程碑。
