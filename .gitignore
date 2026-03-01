@@ -1,0 +1,9 @@
+# Python virtual env
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local runtime data (SQLite and any generated artifacts)
+data/
